@@ -168,7 +168,7 @@ class Decoder(torch.nn.Module):
         cumulated_alignments = alignments
         processed_memories = self.attention.get_processed_memory(encodings)
         
-        tokens = tokens[:, :, :-1]
+        tokens = tokens[:, :-1]
         tokens = self.embedding(tokens)
         tokens = self.prenet(tokens.permute(0, 2, 1)).permute(2, 0, 1)  # [Dec_t - 1, Batch, Dec_dim]
 
