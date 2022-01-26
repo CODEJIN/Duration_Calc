@@ -10,6 +10,7 @@ Sound:
 Feature_Type: 'Mel' #'Spectrogram', 'Mel'
 
 Tokens: 103
+Languages: 2
 
 Encoder:
     Size: 256
@@ -37,8 +38,7 @@ Decoder:
         Dropout_Rate: 0.1
 
 Token_Path: 'E:/22K.Emotion/Token.yaml' # '/datasets/22K.TTS/Token.yaml'
-Log_F0_Info_Path: 'E:/22K.Emotion/Log_F0_Info.yaml' # Tacotron does not use this info.
-Energy_Info_Path: 'E:/22K.Emotion/Energy_Info.yaml' # Tacotron does not use this info.
+Language_Info_Path: 'E:/22K.Emotion/Language_Info.yaml'
 Train:
     Use_Pattern_Cache: true
     Train_Pattern:
@@ -69,7 +69,7 @@ Checkpoint_Path: './results/Checkpoint'
 Log_Path: './results/Log'
 
 Weights_and_Biases:
-    Use: true
+    Use: false
     Project: 'duration_calc'
     Entity: 'codejin'
     Name: 'Test'

@@ -80,9 +80,11 @@ class Trainer:
 
     def Dataset_Generate(self):
         token_dict = yaml.load(open(self.hp.Token_Path), Loader=yaml.Loader)
+        language_dict = yaml.load(open(self.hp.Language_Info_Path), Loader=yaml.Loader)
 
         train_dataset = Dataset(
             token_dict= token_dict,
+            language_dict= language_dict,
             pattern_path= self.hp.Train.Train_Pattern.Path,
             metadata_file= self.hp.Train.Train_Pattern.Metadata_File,
             feature_type= self.hp.Feature_Type,
@@ -91,6 +93,7 @@ class Trainer:
             )
         eval_dataset = Dataset(
             token_dict= token_dict,
+            language_dict= language_dict,
             pattern_path= self.hp.Train.Eval_Pattern.Path,
             metadata_file= self.hp.Train.Eval_Pattern.Metadata_File,
             feature_type= self.hp.Feature_Type,
@@ -150,18 +153,20 @@ class Trainer:
             logging.info(self.model)
 
 
-    def Train_Step(self, features, feature_lengths, tokens, token_lengths):
+    def Train_Step(self, features, feature_lengths, tokens, token_lengths, languages):
         loss_dict = {}
         features = features.to(self.device, non_blocking=True)
         feature_lengths = feature_lengths.to(self.device, non_blocking=True)
         tokens = tokens.to(self.device, non_blocking=True)
         token_lengths = token_lengths.to(self.device, non_blocking=True)
+        languages = languages.to(self.device, non_blocking=True)
 
         with torch.cuda.amp.autocast(enabled= self.hp.Use_Mixed_Precision):
             predictions, alignments = self.model(
                 features= features,
                 feature_lengths= feature_lengths,
-                tokens= tokens
+                languages= languages,
+                tokens= tokens,
                 )
 
             loss_dict['ASR'] = self.criterion_dict['CEL'](predictions, tokens)
@@ -188,8 +193,8 @@ class Trainer:
             self.scalar_dict['Train']['Loss/{}'.format(tag)] += loss
 
     def Train_Epoch(self):
-        for features, feature_lengths, tokens, token_lengths in self.dataloader_dict['Train']:
-            self.Train_Step(features, feature_lengths, tokens, token_lengths)
+        for features, feature_lengths, tokens, token_lengths, languages in self.dataloader_dict['Train']:
+            self.Train_Step(features, feature_lengths, tokens, token_lengths, languages)
 
             if self.steps % self.hp.Train.Checkpoint_Save_Interval == 0:
                 self.Save_Checkpoint()
@@ -220,16 +225,18 @@ class Trainer:
 
 
     @torch.no_grad()
-    def Evaluation_Step(self, features, feature_lengths, tokens, token_lengths):
+    def Evaluation_Step(self, features, feature_lengths, tokens, token_lengths, languages):
         loss_dict = {}
         features = features.to(self.device, non_blocking=True)
         feature_lengths = feature_lengths.to(self.device, non_blocking=True)
         tokens = tokens.to(self.device, non_blocking=True)
         token_lengths = token_lengths.to(self.device, non_blocking=True)
+        languages = languages.to(self.device, non_blocking=True)
 
         predictions, alignments = self.model(
             features= features,
             feature_lengths= feature_lengths,
+            languages= languages,
             tokens= tokens
             )
 
@@ -248,12 +255,12 @@ class Trainer:
 
         self.model.eval()
 
-        for step, (features, feature_lengths, tokens, token_lengths) in tqdm(
+        for step, (features, feature_lengths, tokens, token_lengths, languages) in tqdm(
             enumerate(self.dataloader_dict['Eval'], 1),
             desc='[Evaluation]',
             total= math.ceil(len(self.dataloader_dict['Eval'].dataset) / self.hp.Train.Batch_Size / self.num_gpus)
             ):
-            predictions, alignments = self.Evaluation_Step(features, feature_lengths, tokens, token_lengths)
+            predictions, alignments = self.Evaluation_Step(features, feature_lengths, tokens, token_lengths, languages)
 
         if self.gpu_id == 0:
             self.scalar_dict['Evaluation'] = {

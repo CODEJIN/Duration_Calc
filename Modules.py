@@ -7,15 +7,22 @@ class ASR(torch.nn.Module):
         self.hp = hyper_parameters
 
         self.encoder = Encoder(self.hp)
+        self.language_embedding = torch.nn.Embedding(
+            num_embeddings= self.hp.Languages,
+            embedding_dim= self.hp.Encoder.Size
+            )
         self.decoder = Decoder(self.hp)
 
     def forward(
         self,
         features: torch.Tensor,
         feature_lengths: torch.Tensor,
+        languages: torch.Tensor,
         tokens: torch.Tensor
         ):
         encodings = self.encoder(features)
+        languages = self.language_embedding(languages).unsqueeze(2)
+        encodings = encodings + languages
         predictions, alignments = self.decoder(
             encodings= encodings,
             encoding_lengths= feature_lengths,

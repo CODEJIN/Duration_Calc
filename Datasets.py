@@ -31,6 +31,7 @@ class Dataset(torch.utils.data.Dataset):
     def __init__(
         self,
         token_dict: Dict[str, int],
+        language_dict: Dict[str, int],
         pattern_path: str,
         metadata_file: str,
         feature_type: str,
@@ -38,7 +39,8 @@ class Dataset(torch.utils.data.Dataset):
         augmentation_ratio: float= 0.0
         ):
         super(Dataset, self).__init__()
-        self.token_dict = token_dict        
+        self.token_dict = token_dict
+        self.language_dict = language_dict    
         self.pattern_path = pattern_path
         self.feature_type = feature_type
 
@@ -62,8 +64,10 @@ class Dataset(torch.utils.data.Dataset):
         
         feature = pattern_dict[self.feature_type]
         token = Text_to_Token(pattern_dict['Decomposed'], self.token_dict)
+
+        language = self.language_dict[pattern_dict['Language']]
         
-        return feature, token
+        return feature, token, language
 
     def __len__(self):
         return len(self.patterns)
@@ -76,7 +80,7 @@ class Collater:
         self.token_dict = token_dict
 
     def __call__(self, batch):
-        features, tokens = zip(*batch)
+        features, tokens, languages = zip(*batch)
         feature_lengths = [feature.shape[0] for feature in features]
         token_lengths = [token.shape[0] for token in tokens]        
 
@@ -87,8 +91,9 @@ class Collater:
         feature_lengths = torch.LongTensor(feature_lengths)   # [Batch]
         tokens = torch.LongTensor(tokens)   # [Batch, Time]
         token_lengths = torch.LongTensor(token_lengths)   # [Batch]
+        languages = torch.LongTensor(languages) # [Batch]
 
-        return features, feature_lengths, tokens, token_lengths
+        return features, feature_lengths, tokens, token_lengths, languages
 
 
 class Token_Interpreter:
