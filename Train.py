@@ -177,8 +177,8 @@ class Trainer:
                 tokens= tokens,
                 )
 
-            loss_dict['ASR'] = self.criterion_dict['CEL'](predictions, tokens)
-            loss_dict['Guided_Attention'] = self.criterion_dict['GAL'](alignments, token_lengths, feature_lengths)
+            loss_dict['ASR'] = self.criterion_dict['CEL'](predictions, tokens[:, 1:])
+            loss_dict['Guided_Attention'] = self.criterion_dict['GAL'](alignments, token_lengths - 1, feature_lengths)
             loss_dict['Total'] = loss_dict['ASR'] + loss_dict['Guided_Attention']
 
         self.optimizer.zero_grad()
@@ -248,8 +248,8 @@ class Trainer:
             tokens= tokens
             )
 
-        loss_dict['ASR'] = self.criterion_dict['CEL'](predictions, tokens)
-        loss_dict['Guided_Attention'] = self.criterion_dict['GAL'](alignments, token_lengths, feature_lengths)
+        loss_dict['ASR'] = self.criterion_dict['CEL'](predictions, tokens[:, 1:])
+        loss_dict['Guided_Attention'] = self.criterion_dict['GAL'](alignments, token_lengths - 1, feature_lengths)
         loss_dict['Total'] = loss_dict['ASR'] + loss_dict['Guided_Attention']
 
         for tag, loss in loss_dict.items():

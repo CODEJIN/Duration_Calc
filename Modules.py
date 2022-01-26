@@ -168,8 +168,9 @@ class Decoder(torch.nn.Module):
         cumulated_alignments = alignments
         processed_memories = self.attention.get_processed_memory(encodings)
         
+        tokens = tokens[:, :, :-1]
         tokens = self.embedding(tokens)
-        tokens = self.prenet(tokens.permute(0, 2, 1)).permute(2, 0, 1)  # [Dec_t, Batch, Dec_dim]
+        tokens = self.prenet(tokens.permute(0, 2, 1)).permute(2, 0, 1)  # [Dec_t - 1, Batch, Dec_dim]
 
         predictions_list, alignments_list = [], []        
         for x in tokens:
@@ -202,8 +203,8 @@ class Decoder(torch.nn.Module):
             predictions_list.append(projections)
             alignments_list.append(alignments)
 
-        predictions = torch.stack(predictions_list, dim= 2)  # [Batch, Token_n, Token_t]
-        alignments = torch.stack(alignments_list, dim= 2)  # [Batch, Feature_t, Token_t]
+        predictions = torch.stack(predictions_list, dim= 2)  # [Batch, Token_n, Token_t - 1]
+        alignments = torch.stack(alignments_list, dim= 2)  # [Batch, Feature_t, Token_t - 1]
 
         return predictions, alignments
 
