@@ -44,11 +44,23 @@ Train:
     Train_Pattern:
         Path: 'E:/22K.Emotion/Train' # '/datasets/22K.TTS/Train'
         Metadata_File: 'METADATA.PICKLE'
+        Feature_Length:
+            Min: 0
+            Max: 1500
+        Text_Length:
+            Min: 1
+            Max: 200
         Accumulated_Dataset_Epoch: 1   # This is to prevent slow down from torch.utils.data.DataLoader when the number of patterns is small.
         Augmentation_Ratio: 0.1
     Eval_Pattern:
         Path: 'E:/22K.Emotion/Eval' # '/datasets/22K.TTS/Eval'
-        Metadata_File: 'METADATA.PICKLE'        
+        Metadata_File: 'METADATA.PICKLE'
+        Feature_Length:
+            Min: 0
+            Max: 1500
+        Text_Length:
+            Min: 1
+            Max: 200
     Num_Workers: 2
     Batch_Size: 32
     Learning_Rate:

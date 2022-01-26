@@ -88,6 +88,10 @@ class Trainer:
             pattern_path= self.hp.Train.Train_Pattern.Path,
             metadata_file= self.hp.Train.Train_Pattern.Metadata_File,
             feature_type= self.hp.Feature_Type,
+            feature_length_min= self.hp.Train.Train_Pattern.Feature_Length.Min,
+            feature_length_max= self.hp.Train.Train_Pattern.Feature_Length.Max,
+            text_length_min= self.hp.Train.Train_Pattern.Text_Length.Min,
+            text_length_max= self.hp.Train.Train_Pattern.Text_Length.Max,
             accumulated_dataset_epoch= self.hp.Train.Train_Pattern.Accumulated_Dataset_Epoch,
             augmentation_ratio= self.hp.Train.Train_Pattern.Augmentation_Ratio
             )
@@ -97,6 +101,10 @@ class Trainer:
             pattern_path= self.hp.Train.Eval_Pattern.Path,
             metadata_file= self.hp.Train.Eval_Pattern.Metadata_File,
             feature_type= self.hp.Feature_Type,
+            feature_length_min= self.hp.Train.Eval_Pattern.Feature_Length.Min,
+            feature_length_max= self.hp.Train.Eval_Pattern.Feature_Length.Max,
+            text_length_min= self.hp.Train.Eval_Pattern.Text_Length.Min,
+            text_length_max= self.hp.Train.Eval_Pattern.Text_Length.Max,
             )
 
         if self.gpu_id == 0:

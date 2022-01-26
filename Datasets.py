@@ -35,6 +35,10 @@ class Dataset(torch.utils.data.Dataset):
         pattern_path: str,
         metadata_file: str,
         feature_type: str,
+        feature_length_min: int,
+        feature_length_max: int,
+        text_length_min: int,
+        text_length_max: int,
         accumulated_dataset_epoch: int= 1,
         augmentation_ratio: float= 0.0
         ):
@@ -43,6 +47,11 @@ class Dataset(torch.utils.data.Dataset):
         self.language_dict = language_dict    
         self.pattern_path = pattern_path
         self.feature_type = feature_type
+
+        if feature_type == 'Mel':
+            feature_length_dict = 'Mel_Length_Dict'
+        elif feature_type == 'Spectrogram':
+            feature_length_dict = 'Spectrogram_Length_Dict'
 
         metadata_dict = pickle.load(open(
             os.path.join(pattern_path, metadata_file).replace('\\', '/'), 'rb'
@@ -56,7 +65,15 @@ class Dataset(torch.utils.data.Dataset):
                 patterns *= int(np.ceil(augmentation_ratio / ratio))
             self.patterns.extend(patterns)
         
-        self.patterns = self.patterns * accumulated_dataset_epoch
+        self.patterns = [
+            x for x in self.patterns
+            if all([
+                metadata_dict[feature_length_dict][x] >= feature_length_min,
+                metadata_dict[feature_length_dict][x] <= feature_length_max,
+                metadata_dict['Text_Length_Dict'][x] >= text_length_min,
+                metadata_dict['Text_Length_Dict'][x] <= text_length_max
+                ])
+            ] * accumulated_dataset_epoch
 
     def __getitem__(self, idx):
         path = os.path.join(self.pattern_path, self.patterns[idx]).replace('\\', '/')
